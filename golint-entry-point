@@ -1,0 +1,25 @@
+#!/bin/sh
+
+export BUILD_DESC="go-linting code...."
+export STATUS="pending"
+cat /status | envsubst > tmpstatus
+
+curl -s -X POST -H "Content-Type: application/json" -H "Authorization: token $TOKEN" -d @tmpstatus https://api.github.com/repos/$OWNER/$REPO/statuses/$SHA > /dev/null
+
+STARTTIME=$(date +%s)
+FILES=$(go list ./... | grep -v vendor)
+/go/bin/golint -set_exit_status $FILES 
+EXITSTATE=$?
+ENDTIME=$(date +%s)
+
+export BUILD_DESC="Test ran in $(($ENDTIME - $STARTTIME)) seconds"
+
+if [ $EXITSTATE -eq 0 ]; then
+    export STATUS="success"
+else
+    export STATUS="failure"
+fi
+
+cat /status | envsubst > tmpstatus
+
+curl -s -X POST -H "Content-Type: application/json" -H "Authorization: token $TOKEN" -d @tmpstatus https://api.github.com/repos/$OWNER/$REPO/statuses/$SHA > /dev/null

@@ -1,0 +1,6 @@
+{
+  "state": "$STATUS",
+  "target_url": "$BUILD_URL",
+  "description": "$BUILD_DESC",
+  "context": "ci/jenkins/go-lint"
+}
